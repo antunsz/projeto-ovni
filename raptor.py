@@ -29,6 +29,7 @@ class Raptor:
 
         config.enable_stream(rs.stream.depth, width, height, rs.format.z16, 30)
         config.enable_stream(rs.stream.color, width, height, rs.format.bgr8, 30)
+        config.enable_stream(rs.stream.infrared, 1, width, height, rs.format.y8, 30)
 
         # Start streaming
         self.pipeline.start(config)
@@ -45,12 +46,15 @@ class Raptor:
                 frames = self.pipeline.wait_for_frames()
                 depth_frame = frames.get_depth_frame()
                 color_frame = frames.get_color_frame()
+                infrared_frame = frames.get_infrared_frame(1)
                 if not depth_frame or not color_frame:
                     continue
 
                 # Convert images to numpy arrays
                 depth_image = np.asanyarray(depth_frame.get_data())
                 color_image = np.asanyarray(color_frame.get_data())
+                infrared_image = np.asanyarray(infrared_frame.get_data())
+                
 
                 # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
                 depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
@@ -63,6 +67,7 @@ class Raptor:
                 
                 depth_colormap_dim = depth_colormap.shape
                 color_colormap_dim = color_image.shape
+                infrared_colormap_dim = infrared_image.shape
                 
                 if make_output_json:
                     if counter % frame_catch == 0:
@@ -73,6 +78,8 @@ class Raptor:
                             f.write(json.dumps({'image':color_image.tolist(), 'dim':color_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
                         with open(filepath+today+'_'+str(self.counter_name)+'_depth.data', 'a') as f:
                             f.write(json.dumps({'image':depth_image.tolist(), 'dim':depth_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
+                        with open(filepath+today+'_'+str(self.counter_name)+'_infrared.data', 'a') as f:
+                            f.write(json.dumps({'image':infrared_image.tolist(), 'dim':infrared_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
                         self.counter_imagespfile+=1    
                     counter += 1
                     
