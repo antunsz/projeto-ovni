@@ -34,12 +34,16 @@ class Raptor:
         # Start streaming
         self.pipeline.start(config)
 
-    def run(self, d_function=None, rgb_function=None, make_output_json=False, filepath='./data/', frame_catch=30):
+    def run(self, d_function=None, rgb_function=None, make_output_json=False, filepath='./data/', frame_catch=30, max_images=100):
         try:
             if make_output_json:
                 today = date.today().strftime('%d-%m-%Y')
                 os.makedirs(os.path.dirname(filepath), exist_ok=True)
                 counter = 0
+                images_counter = 0
+                color_images_matrix = None
+                depth_images_matrix = None
+                infrared_images_matrix = None
                 
             while True:
                 # Wait for a coherent pair of frames: depth and color
@@ -71,16 +75,29 @@ class Raptor:
                 
                 if make_output_json:
                     if counter % frame_catch == 0:
-                        if self.counter_imagespfile > 1000:
-                            self.counter_imagespfile = 0
-                            self.counter_name += 1
-                        with open(filepath+today+'_'+str(self.counter_name)+'_rgb.data', 'a') as f:
-                            f.write(json.dumps({'image':color_image.tolist(), 'dim':color_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
-                        with open(filepath+today+'_'+str(self.counter_name)+'_depth.data', 'a') as f:
-                            f.write(json.dumps({'image':depth_image.tolist(), 'dim':depth_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
-                        with open(filepath+today+'_'+str(self.counter_name)+'_infrared.data', 'a') as f:
-                            f.write(json.dumps({'image':infrared_image.tolist(), 'dim':infrared_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
-                        self.counter_imagespfile+=1    
+                        if color_images_matrix == None:
+                            color_images_matrix = np.array(color_image.tolist())
+                        else:
+                            color_images_matrix = color_images_matrix + np.array(color_image.tolist())
+                        if depth_images_matrix == None:
+                            depth_images_matrix = np.array(color_image.tolist())
+                        else:
+                            depth_images_matrix = depth_images_matrix + np.array(color_image.tolist())
+                        if infrared_images_matrix == None:
+                            infrared_images_matrix = np.array(color_image.tolist())
+                        else:
+                            infrared_images_matrix = infrared_images_matrix + np.array(color_image.tolist())
+                        images_counter += 1
+                        # if self.counter_imagespfile > 1000:
+                        #     self.counter_imagespfile = 0
+                        #     self.counter_name += 1
+                        # with open(filepath+today+'_'+str(self.counter_name)+'_rgb.data', 'a') as f:
+                        #     f.write(json.dumps({'image':color_image.tolist(), 'dim':color_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
+                        # with open(filepath+today+'_'+str(self.counter_name)+'_depth.data', 'a') as f:
+                        #     f.write(json.dumps({'image':depth_image.tolist(), 'dim':depth_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
+                        # with open(filepath+today+'_'+str(self.counter_name)+'_infrared.data', 'a') as f:
+                        #     f.write(json.dumps({'image':infrared_image.tolist(), 'dim':infrared_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
+                        # self.counter_imagespfile+=1
                     counter += 1
                     
                 
@@ -97,7 +114,18 @@ class Raptor:
                 cv2.imshow('RealSense', images)
                 k = cv2.waitKey(1)
                 
-                if k == 27:
+                if k == 27 or images_counter >= max_images:
+                    color_images_matrix = (color_images_matrix / images_counter).astype(int)
+                    depth_images_matrix = (depth_images_matrix / images_counter).astype(int)
+                    infrared_images_matrix = (infrared_images_matrix / images_counter).astype(int)
+                    
+                    with open(filepath+today+'_'+'_rgb.data', 'a') as f:
+                        f.write(json.dumps({'image':color_images_matrix.tolist(), 'dim':color_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
+                    with open(filepath+today+'_'+'_depth.data', 'a') as f:
+                        f.write(json.dumps({'image':depth_images_matrix.tolist(), 'dim':depth_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
+                    with open(filepath+today+'_'+'_infrared.data', 'a') as f:
+                        f.write(json.dumps({'image':infrared_images_matrix.tolist(), 'dim':infrared_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
+                    
                     print('Salvando configurações...')
                     with open('raptor_config.json', 'w') as f:
                         self.config['counter_name'] = self.counter_name
