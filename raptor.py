@@ -80,13 +80,13 @@ class Raptor:
                         else:
                             color_images_matrix = color_images_matrix + np.array(color_image.tolist())
                         if depth_images_matrix is None:
-                            depth_images_matrix = np.array(color_image.tolist())
+                            depth_images_matrix = np.array(depth_image.tolist())
                         else:
-                            depth_images_matrix = depth_images_matrix + np.array(color_image.tolist())
+                            depth_images_matrix = depth_images_matrix + np.array(depth_image.tolist())
                         if infrared_images_matrix is None:
-                            infrared_images_matrix = np.array(color_image.tolist())
+                            infrared_images_matrix = np.array(infrared_image.tolist())
                         else:
-                            infrared_images_matrix = infrared_images_matrix + np.array(color_image.tolist())
+                            infrared_images_matrix = infrared_images_matrix + np.array(infrared_image.tolist())
                         images_counter += 1
                         # if self.counter_imagespfile > 1000:
                         #     self.counter_imagespfile = 0
@@ -119,11 +119,11 @@ class Raptor:
                     depth_images_matrix = (depth_images_matrix / images_counter).astype(int)
                     infrared_images_matrix = (infrared_images_matrix / images_counter).astype(int)
                     
-                    with open(filepath+today+'_'+'_rgb.data', 'a') as f:
+                    with open(filepath+today+'_rgb.data', 'a') as f:
                         f.write(json.dumps({'image':color_images_matrix.tolist(), 'dim':color_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
-                    with open(filepath+today+'_'+'_depth.data', 'a') as f:
+                    with open(filepath+today+'_depth.data', 'a') as f:
                         f.write(json.dumps({'image':depth_images_matrix.tolist(), 'dim':depth_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
-                    with open(filepath+today+'_'+'_infrared.data', 'a') as f:
+                    with open(filepath+today+'_infrared.data', 'a') as f:
                         f.write(json.dumps({'image':infrared_images_matrix.tolist(), 'dim':infrared_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
                     
                     print('Salvando configurações...')
