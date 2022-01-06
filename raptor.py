@@ -75,15 +75,15 @@ class Raptor:
                 
                 if make_output_json:
                     if counter % frame_catch == 0:
-                        if color_images_matrix == None:
+                        if color_images_matrix is None:
                             color_images_matrix = np.array(color_image.tolist())
                         else:
                             color_images_matrix = color_images_matrix + np.array(color_image.tolist())
-                        if depth_images_matrix == None:
+                        if depth_images_matrix is None:
                             depth_images_matrix = np.array(color_image.tolist())
                         else:
                             depth_images_matrix = depth_images_matrix + np.array(color_image.tolist())
-                        if infrared_images_matrix == None:
+                        if infrared_images_matrix is None:
                             infrared_images_matrix = np.array(color_image.tolist())
                         else:
                             infrared_images_matrix = infrared_images_matrix + np.array(color_image.tolist())
