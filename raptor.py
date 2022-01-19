@@ -26,6 +26,9 @@ class Raptor:
         pipeline_profile = config.resolve(pipeline_wrapper)
         device = pipeline_profile.get_device()
         device_product_line = str(device.get_info(rs.camera_info.product_line))
+        
+        depth_sensor = device.first_depth_sensor()
+        depth_sensor.set_option(rs.option.depth_units, 1)
 
         config.enable_stream(rs.stream.depth, width, height, rs.format.z16, 30)
         config.enable_stream(rs.stream.color, width, height, rs.format.bgr8, 30)
