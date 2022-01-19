@@ -27,8 +27,8 @@ class Raptor:
         device = pipeline_profile.get_device()
         device_product_line = str(device.get_info(rs.camera_info.product_line))
         
-        depth_sensor = device.first_depth_sensor()
-        depth_sensor.set_option(rs.option.depth_units, 1)
+        #depth_sensor = device.first_depth_sensor()
+        #depth_sensor.set_option(rs.option.depth_units, 1)
 
         config.enable_stream(rs.stream.depth, width, height, rs.format.z16, 30)
         config.enable_stream(rs.stream.color, width, height, rs.format.bgr8, 30)
@@ -37,7 +37,7 @@ class Raptor:
         # Start streaming
         self.pipeline.start(config)
 
-    def run(self, d_function=None, rgb_function=None, make_output_json=False, filepath='./data/', frame_catch=30, max_images=100):
+    def run(self, d_function=None, rgb_function=None, make_output_json=False, filepath='./data/', frame_catch=30, max_images=100, print_distances=False):
         try:
             if make_output_json:
                 today = date.today().strftime('%d-%m-%Y')
@@ -61,6 +61,11 @@ class Raptor:
                 depth_image = np.asanyarray(depth_frame.get_data())
                 color_image = np.asanyarray(color_frame.get_data())
                 infrared_image = np.asanyarray(infrared_frame.get_data())
+                
+                if print_distances:
+                    print("245, 110", depth_frame.get_distance(245, 110))
+                    print("394, 243", depth_frame.get_distance(394, 243))
+                    print("152, 297", depth_frame.get_distance(154, 297))
                 
 
                 # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
