@@ -36,8 +36,15 @@ class Raptor:
 
         # Start streaming
         self.pipeline.start(config)
+        
+        #with open("preset_tobias_2.json") as json_file:
+        #    json_obj = json.load(json_file)
+        #    json_file.close()
 
-    def run(self, d_function=None, rgb_function=None, make_output_json=False, filepath='./data/', frame_catch=30, max_images=100, print_distances=False):
+        #advnc_mode = rs.rs400_advanced_mode(device)
+        #advnc_mode.load_json(json.dumps(json_obj))
+
+    def run(self, d_function=None, rgb_function=None, make_output_json=False, prefix='', filepath='./data/', frame_catch=30, max_images=100, print_distances=False):
         try:
             if make_output_json:
                 today = date.today().strftime('%d-%m-%Y')
@@ -86,15 +93,15 @@ class Raptor:
                         if color_images_matrix is None:
                             color_images_matrix = np.array(color_image.tolist())
                         else:
-                            color_images_matrix = color_images_matrix + np.array(color_image.tolist())
+                            color_images_matrix += np.array(color_image.tolist())
                         if depth_images_matrix is None:
                             depth_images_matrix = np.array(depth_image.tolist())
                         else:
-                            depth_images_matrix = depth_images_matrix + np.array(depth_image.tolist())
+                            depth_images_matrix += np.array(depth_image.tolist())
                         if infrared_images_matrix is None:
                             infrared_images_matrix = np.array(infrared_image.tolist())
                         else:
-                            infrared_images_matrix = infrared_images_matrix + np.array(infrared_image.tolist())
+                            infrared_images_matrix += np.array(infrared_image.tolist())
                         images_counter += 1
                         # if self.counter_imagespfile > 1000:
                         #     self.counter_imagespfile = 0
@@ -118,20 +125,20 @@ class Raptor:
                     images = np.hstack((color_image, depth_colormap))
 
                 # Show images
-                cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
-                cv2.imshow('RealSense', images)
-                k = cv2.waitKey(1)
-                
+                #cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
+                #cv2.imshow('RealSense', images)
+                #k = cv2.waitKey(1)
+                k = 0
                 if k == 27 or images_counter >= max_images:
                     color_images_matrix = (color_images_matrix / images_counter).astype(int)
                     depth_images_matrix = (depth_images_matrix / images_counter).astype(int)
                     infrared_images_matrix = (infrared_images_matrix / images_counter).astype(int)
                     
-                    with open(filepath+today+'_rgb.data', 'a') as f:
+                    with open(filepath+prefix+today+'_rgb.data', 'a') as f:
                         f.write(json.dumps({'image':color_images_matrix.tolist(), 'dim':color_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
-                    with open(filepath+today+'_depth.data', 'a') as f:
+                    with open(filepath+prefix+today+'_depth.data', 'a') as f:
                         f.write(json.dumps({'image':depth_images_matrix.tolist(), 'dim':depth_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
-                    with open(filepath+today+'_infrared.data', 'a') as f:
+                    with open(filepath+prefix+today+'_infrared.data', 'a') as f:
                         f.write(json.dumps({'image':infrared_images_matrix.tolist(), 'dim':infrared_colormap_dim, 'timestamp':datetime.now().strftime('%d-%m-%Y %H:%M:%S')})+', ')
                     
                     print('Salvando configurações...')
@@ -140,7 +147,7 @@ class Raptor:
                         self.config['counter_imagespfile'] = self.counter_imagespfile
                         f.write(json.dumps(self.config))
                     print('Finalizando...')    
-                    cv2.destroyAllWindows()
+                    #cv2.destroyAllWindows()
                     break  
 
         finally:
